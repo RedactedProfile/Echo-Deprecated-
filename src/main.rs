@@ -2,31 +2,40 @@ extern crate yaml_rust;
 use std::io;
 use std::fs;
 use std::net::{TcpListener, TcpStream};
-use yaml_rust::{YamlLoader};
+use yaml_rust::{Yaml, YamlLoader};
 
+struct Config {
+    doc: Yaml
+}
 
+impl Config {
+    fn parse() -> Self {
+        // let config_file = fs::read_to_string("./conf.yaml").unwrap();
+        let config_file = r#"
+            server:
+                host: "foo.com"
+        "#;
+        let config = YamlLoader::load_from_str(config_file).unwrap();
+        
+        let doc = config.into_iter().next().expect("empty yaml");
+    
+        Self { doc }
+    }
+    
+    fn get(&self, value: &str) -> &str {
+        self.doc["server"][value]
+            .as_str()
+            .expect("value not a string")
+    }
+}
 
 fn handle_client(_stream: TcpStream) {
     println!("hit")
 }
 
-fn get_config (value:String) -> String {
-    let _config_file:String = fs::read_to_string("./conf.yaml").unwrap();
-    let _config = YamlLoader::load_from_str(&_config_file).unwrap();
-
-    let doc= &_config[0];
-
-    return doc["server"]["host"].as_str().unwrap().parse().unwrap();
-}
-
-fn parse_config() {
-    let get = get_config;
-    (get);
-}
-
 fn main() -> io::Result<()> {
-    let _config = parse_config();
-    println!("{:?}", _config().get("host"));
+    let config = Config::parse();
+    let host = config.get("host");
 
     let listener = TcpListener::bind("0.0.0.0:9875")?;
 

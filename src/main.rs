@@ -1,25 +1,32 @@
-use std::net::{TcpListener, TcpStream};
+extern crate yaml_rust;
 use std::io;
-use std::io::Read;
-use std::collections::BTreeMap;
+use std::fs;
+use std::net::{TcpListener, TcpStream};
+use yaml_rust::{YamlLoader};
 
-struct Configuration {
-    host: &'static str,
-    port: i8
-}
 
-fn parse_config() {
-    let new_config: Configuration = Configuration { host: "127.0.0.1", port: 9875 };
-    let s = serde_yaml::to_string(&new_config)?;
-    print!(s)
-}
 
-fn handle_client(stream: TcpStream) {
+fn handle_client(_stream: TcpStream) {
     println!("hit")
 }
 
+fn get_config (value:String) -> String {
+    let _config_file:String = fs::read_to_string("./conf.yaml").unwrap();
+    let _config = YamlLoader::load_from_str(&_config_file).unwrap();
+
+    let doc= &_config[0];
+
+    return doc["server"]["host"].as_str().unwrap().parse().unwrap();
+}
+
+fn parse_config() {
+    let get = get_config;
+    (get);
+}
+
 fn main() -> io::Result<()> {
-    let config = parse_config();
+    let _config = parse_config();
+    println!("{:?}", _config().get("host"));
 
     let listener = TcpListener::bind("0.0.0.0:9875")?;
 

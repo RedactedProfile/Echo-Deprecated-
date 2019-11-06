@@ -10,13 +10,9 @@ struct Config {
 
 impl Config {
     fn parse() -> Self {
-        // let config_file = fs::read_to_string("./conf.yaml").unwrap();
-        let config_file = r#"
-            server:
-                host: "foo.com"
-        "#;
-        let config = YamlLoader::load_from_str(config_file).unwrap();
-        
+        let config_file = fs::read_to_string("./conf.yaml").unwrap();
+        let config = YamlLoader::load_from_str(&config_file).unwrap();
+
         let doc = config.into_iter().next().expect("empty yaml");
     
         Self { doc }
@@ -36,6 +32,8 @@ fn handle_client(_stream: TcpStream) {
 fn main() -> io::Result<()> {
     let config = Config::parse();
     let host = config.get("host");
+
+    println!("{:?}", host);
 
     let listener = TcpListener::bind("0.0.0.0:9875")?;
 

@@ -8,6 +8,7 @@
       <sourceFolder url="file://$MODULE_DIR$/../Echo\tests" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/../Echo\benches" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
+      <excludeFolder url="file://$MODULE_DIR$/../Echo\target" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

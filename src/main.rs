@@ -23,6 +23,12 @@ impl Config {
             .as_str()
             .expect("value not a string")
     }
+
+    fn get_int(&self, value: &str) -> i64 {
+        self.doc["server"][value]
+            .as_i64()
+            .expect("value not a string")
+    }
 }
 
 fn handle_client(_stream: TcpStream) {
@@ -30,12 +36,12 @@ fn handle_client(_stream: TcpStream) {
 }
 
 fn main() -> io::Result<()> {
-    let config = Config::parse();
-    let host = config.get("host");
+    let _config = Config::parse();
+    let _host = _config.get("host");
+    let _port = _config.get_int("port");
 
-    println!("{:?}", host);
-
-    let listener = TcpListener::bind("0.0.0.0:9875")?;
+    let _connection_string = format!("{}:{}", &_host, &_port.to_string()).to_string();
+    let listener = TcpListener::bind(_connection_string)?;
 
     for stream in listener.incoming() {
         handle_client(stream?);

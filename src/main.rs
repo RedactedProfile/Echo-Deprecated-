@@ -3,6 +3,7 @@ use std::io;
 use std::fs;
 use std::net::{TcpListener, TcpStream};
 use yaml_rust::{Yaml, YamlLoader};
+use std::io::Read;
 
 struct Config {
     doc: Yaml
@@ -31,8 +32,21 @@ impl Config {
     }
 }
 
-fn handle_client(_stream: TcpStream) {
-    println!("hit")
+fn handle_client(mut _stream: TcpStream) {
+    println!("hit");
+//    _stream.read(&mut [0; 128]);
+    let mut buf = String::new();
+    loop {
+        match _stream.read_to_string(&mut buf) {
+            Ok(_) => {
+                println!("{:?}", buf.to_ascii_lowercase());
+                break
+            },
+            Err(e) => panic!("encountered IO error: {}", e),
+        }
+    }
+
+    ()
 }
 
 fn main() -> io::Result<()> {
@@ -48,7 +62,16 @@ fn main() -> io::Result<()> {
     println!("---------------------------------");
 
     for stream in listener.incoming() {
-        handle_client(stream?);
+        match stream {
+            Ok(stream) => {
+                println!("New Client Connection");
+                handle_client(stream);
+            }
+            Err(e) => {
+                println!("ERR: Connection Failed :: {}", &e);
+            }
+        }
+
     }
 
     Ok(())

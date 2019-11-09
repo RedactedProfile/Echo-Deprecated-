@@ -36,12 +36,16 @@ fn handle_client(_stream: TcpStream) {
 }
 
 fn main() -> io::Result<()> {
+    println!("Welcome to Echo\n===============\nGetting config ...");
     let _config = Config::parse();
+    println!("Creating server...");
     let _host = _config.get("host");
     let _port = _config.get_int("port");
 
-    let _connection_string = format!("{}:{}", &_host, &_port.to_string()).to_string();
-    let listener = TcpListener::bind(_connection_string)?;
+    let _connection_string:String = format!("{}:{}", &_host, &_port.to_string()).to_string();
+    let listener = TcpListener::bind(&_connection_string)?;
+    println!("Server running on {}", &_connection_string);
+    println!("---------------------------------");
 
     for stream in listener.incoming() {
         handle_client(stream?);

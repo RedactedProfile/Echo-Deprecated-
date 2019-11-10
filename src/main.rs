@@ -1,14 +1,11 @@
 extern crate yaml_rust;
-extern crate tokio;
 
 use std::fs;
-use std::net::SocketAddr;
+use std::thread;
+use std::net::{TcpListener, TcpStream, Shutdown};
+use std::io::{Read, Write};
 
 use yaml_rust::{Yaml, YamlLoader};
-
-use tokio::prelude::*;
-use tokio::io;
-use tokio::net::TcpListener;
 
 struct Config {
     doc: Yaml
@@ -37,6 +34,21 @@ impl Config {
     }
 }
 
+fn handle_client(mut stream: TcpStream) {
+    let mut data = [0 as u8; 50]; // 50 byte buffer
+    while match stream.read(&mut data) {
+        Ok(size) => {
+            stream.write(&data[0..size]).unwrap();
+            true 
+        },
+        Err(_) => {
+            eprintln!("an error occured, terminating connection with {}", stream.peer_addr().unwrap());
+            stream.shutdown(Shutdown::Both).unwrap();
+            false 
+        }
+    } {}
+}
+
 fn main() {
     println!("Welcome to Echo\n===============\nGetting config ...");
     let _config = Config::parse();
@@ -45,32 +57,22 @@ fn main() {
     let _port = _config.get_int("port");
 
     let _connection_string:String = format!("{}:{}", &_host, &_port.to_string()).to_string();
-    let _connection_addr = _connection_string.parse::<SocketAddr>().unwrap();
-
-    let listener = TcpListener::bind(&_connection_addr)
-                                .expect("unable to bind TCP socket, aborting");
-
+    let listener = TcpListener::bind(&_connection_string).unwrap();
     println!("Server running on {}", &_connection_string);
-    println!("---------------------------------");
 
-    let server = listener.incoming()
-        .map_err(|e| eprintln!("accept failed! = {:?}", e))
-        .for_each(|sock| {
-            let (reader, writer) = sock.split();
+    for stream in listener.incoming() {
+        match stream {
+            Ok(stream) => {
+                println!("Connection from {}", stream.peer_addr().unwrap());
+                thread::spawn(move || {
+                    handle_client(stream);
+                });
+            },
+            Err(e) => {
+                eprintln!("Error: {}", e);
+            }
+        }
+    }
 
-            let bytes_copied = io::copy(reader, writer);
-
-            let msg = bytes_copied.then(|result| {
-                match result {
-                    Ok((amount, _, _)) => println!("wrote {} bytes", amount),
-                    Err(e) => eprintln!("error: {}", e)
-                }
-
-                Ok(())
-            });
-
-            tokio::spawn(msg)
-        });
-
-    tokio::run(server);
+    drop(listener);
 }

@@ -34,12 +34,20 @@ impl Config {
     }
 }
 
+fn parse_command(input:String) {
+    
+}
+
 fn handle_client(mut stream: TcpStream) {
     let mut data = [0 as u8; 50]; // 50 byte buffer
     while match stream.read(&mut data) {
-        Ok(size) => {
-            stream.write(b"TESTING").unwrap();
-            stream.write(&data[0..size]).unwrap();
+        Ok(_size) => {
+
+            let _command_input = String::from_utf8_lossy(&data).to_owned();  
+            println!("CMD: {}", &_command_input);
+
+            parse_command(_command_input.to_string());
+
             true 
         },
         Err(_) => {

@@ -38,6 +38,7 @@ fn handle_client(mut stream: TcpStream) {
     let mut data = [0 as u8; 50]; // 50 byte buffer
     while match stream.read(&mut data) {
         Ok(size) => {
+            stream.write(b"TESTING").unwrap();
             stream.write(&data[0..size]).unwrap();
             true 
         },

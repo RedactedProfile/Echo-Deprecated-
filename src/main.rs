@@ -1,9 +1,7 @@
-extern crate yaml_rust;
-
 use std::fs;
 use std::thread;
 use std::net::{TcpListener, TcpStream, Shutdown};
-use std::io::{Read, Write};
+use std::io::{Read};
 
 use yaml_rust::{Yaml, YamlLoader};
 
@@ -34,8 +32,8 @@ impl Config {
     }
 }
 
-fn parse_command(input:String) {
-    
+fn parse_command(_input:String) {
+
 }
 
 fn handle_client(mut stream: TcpStream) {
